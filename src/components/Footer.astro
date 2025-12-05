@@ -1,0 +1,20 @@
+---
+// Footer data - inline to avoid file system issues at build time
+const footerContent = {
+  labName: 'WI-PI Lab',
+  email: 'contact@wiscprivacy.com',
+  address: '1210 W Dayton St, Madison, WI 53706',
+  copyrightOwner: 'Wisconsin Privacy and Security Group'
+};
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="footer__content">
+    <h3>{footerContent.labName}</h3>
+    <p>Email: {footerContent.email}</p>
+    <p>Address: {footerContent.address}</p>
+    <p>© {currentYear} {footerContent.copyrightOwner}</p>
+  </div>
+</footer>

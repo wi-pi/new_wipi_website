@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <rect width="400" height="300" fill="#1e3a5f"/>
+  <!-- Server/System representation -->
+  <rect x="140" y="60" width="120" height="80" rx="8" fill="#2d5a87" stroke="#4a90d9" stroke-width="2"/>
+  <rect x="150" y="75" width="100" height="8" rx="2" fill="#4a90d9"/>
+  <rect x="150" y="90" width="100" height="8" rx="2" fill="#4a90d9"/>
+  <rect x="150" y="105" width="100" height="8" rx="2" fill="#4a90d9"/>
+  <circle cx="160" cy="125" r="5" fill="#6dd5ed"/>
+  <circle cx="180" cy="125" r="5" fill="#6dd5ed"/>
+  <!-- Network lines -->
+  <line x1="200" y1="140" x2="120" y2="200" stroke="#4a90d9" stroke-width="2"/>
+  <line x1="200" y1="140" x2="200" y2="200" stroke="#4a90d9" stroke-width="2"/>
+  <line x1="200" y1="140" x2="280" y2="200" stroke="#4a90d9" stroke-width="2"/>
+  <!-- Nodes -->
+  <circle cx="120" cy="220" r="25" fill="#2d5a87" stroke="#4a90d9" stroke-width="2"/>
+  <circle cx="200" cy="220" r="25" fill="#2d5a87" stroke="#4a90d9" stroke-width="2"/>
+  <circle cx="280" cy="220" r="25" fill="#2d5a87" stroke="#4a90d9" stroke-width="2"/>
+  <!-- Lock icon -->
+  <rect x="270" y="50" width="40" height="30" rx="4" fill="#4a90d9"/>
+  <path d="M280 50 V40 A10 10 0 0 1 300 40 V50" stroke="#4a90d9" stroke-width="3" fill="none"/>
+</svg>
+

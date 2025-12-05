@@ -1,0 +1,230 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const projects = await getCollection('projects');
+
+const focusOptions = [
+  { key: 'all', label: 'All' },
+  { key: 'systems', label: 'In Systems' },
+  { key: 'people', label: 'For People' },
+  { key: 'math', label: 'Using Math' },
+  { key: 'ai', label: 'For/Using AI' },
+];
+
+const focusLabelMap: Record<string, string> = {
+  systems: 'In Systems',
+  people: 'For People',
+  math: 'Using Math',
+  ai: 'For/Using AI',
+};
+---
+
+<BaseLayout title="Artifacts" includeFooter={false}>
+  <main class="slides-page">
+    <div class="slides-page__header">
+      <h1 class="slides-page__heading">Slides & Code</h1>
+      <p class="slides-page__subtitle">Presentation materials and open-source code from our research</p>
+    </div>
+    
+    <div class="slides-page__container">
+      <!-- Focus Filter -->
+      <div class="filter-section">
+        <div class="filter-label">Filter by research focus</div>
+        <div class="filter-container" id="focus-filter">
+          {focusOptions.map((opt) => (
+            <button 
+              class={`filter-btn ${opt.key === 'all' ? 'active' : ''}`}
+              data-focus={opt.key}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <!-- Projects Grid -->
+      <div class="projects-grid" id="projects-grid">
+        {projects.map((proj, index) => (
+          <div 
+            class="project-card"
+            data-focus={JSON.stringify(proj.data.focus)}
+            data-index={index}
+            style={`--project-index: ${index}`}
+          >
+            <div class="project-card__title-row">
+              <h3 class="project-card__title">{proj.data.title}</h3>
+            </div>
+
+            <div class="project-card__meta-row">
+              <div class="project-card__authors">{proj.data.authors}</div>
+              {(proj.data.year || proj.data.venue) && (
+                <span class="project-card__venue">
+                  {[proj.data.venue, proj.data.year].filter(Boolean).join(', ')}
+                </span>
+              )}
+            </div>
+
+            <div class="project-card__focus-row">
+              {proj.data.focus.map((f: string) => (
+                <span class="project-card__focus-badge">{focusLabelMap[f]}</span>
+              ))}
+            </div>
+
+            <p class="project-card__abstract" data-abstract={index}>
+              {proj.body}
+            </p>
+
+            <div class="project-card__btn-row">
+              {proj.data.slidesUrl && (
+                <button 
+                  class="btn-primary" 
+                  data-slides={proj.data.slidesUrl}
+                  data-title={proj.data.title}
+                  title="Download Slides"
+                >
+                  Download Slides
+                </button>
+              )}
+
+              {proj.data.githubUrl && (
+                <a 
+                  class="icon-link"
+                  href={proj.data.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="View on GitHub"
+                >
+                  <img 
+                    class="icon-link__img"
+                    src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg"
+                    alt="GitHub"
+                  />
+                </a>
+              )}
+
+              {proj.data.huggingFaceUrl && (
+                <a 
+                  class="icon-link"
+                  href={proj.data.huggingFaceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="View on Hugging Face"
+                >
+                  <img 
+                    class="icon-link__img"
+                    src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg"
+                    alt="Hugging Face"
+                  />
+                </a>
+              )}
+
+              <button class="btn-abstract-toggle" data-toggle-abstract={index}>
+                Show Abstract ▼
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </main>
+
+  <!-- Slides Modal -->
+  <div class="modal-backdrop" id="slides-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h4 class="modal-title">Slides</h4>
+        <button class="modal-close" data-close-modal>×</button>
+      </div>
+      <div class="modal-body">
+        <iframe class="slides-frame" id="slides-frame" src="" title="Slides Viewer"></iframe>
+        <a class="slides-link" id="slides-link" href="" target="_blank" rel="noopener noreferrer">
+          Download Slides
+        </a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Filter functionality
+  const focusButtons = document.querySelectorAll('#focus-filter .filter-btn');
+  const projectCards = document.querySelectorAll('.project-card');
+
+  let activeFocus = 'all';
+
+  function filterCards() {
+    projectCards.forEach(card => {
+      const cardFocus = JSON.parse(card.getAttribute('data-focus') || '[]');
+      const focusMatch = activeFocus === 'all' || cardFocus.includes(activeFocus);
+      (card as HTMLElement).style.display = focusMatch ? 'flex' : 'none';
+    });
+  }
+
+  focusButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      focusButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFocus = btn.getAttribute('data-focus') || 'all';
+      filterCards();
+    });
+  });
+
+  // Abstract toggle
+  const abstractToggles = document.querySelectorAll('[data-toggle-abstract]');
+  abstractToggles.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const index = btn.getAttribute('data-toggle-abstract');
+      const abstract = document.querySelector(`[data-abstract="${index}"]`);
+      
+      if (abstract?.classList.contains('expanded')) {
+        abstract.classList.remove('expanded');
+        btn.textContent = 'Show Abstract ▼';
+      } else {
+        abstract?.classList.add('expanded');
+        btn.textContent = 'Hide Abstract ▲';
+      }
+    });
+  });
+
+  // Slides Modal
+  const slidesModal = document.getElementById('slides-modal');
+  const slidesFrame = document.getElementById('slides-frame') as HTMLIFrameElement;
+  const slidesLink = document.getElementById('slides-link') as HTMLAnchorElement;
+
+  document.querySelectorAll('[data-slides]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const slidesUrl = btn.getAttribute('data-slides');
+      if (slidesUrl && slidesModal && slidesFrame && slidesLink) {
+        slidesFrame.src = slidesUrl;
+        slidesLink.href = slidesUrl;
+        slidesModal.classList.add('open');
+      }
+    });
+  });
+
+  // Close modal
+  document.querySelectorAll('[data-close-modal]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      slidesModal?.classList.remove('open');
+      if (slidesFrame) slidesFrame.src = '';
+    });
+  });
+
+  // Close modal on backdrop click
+  slidesModal?.addEventListener('click', (e) => {
+    if (e.target === slidesModal) {
+      slidesModal.classList.remove('open');
+      if (slidesFrame) slidesFrame.src = '';
+    }
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      slidesModal?.classList.remove('open');
+      if (slidesFrame) slidesFrame.src = '';
+    }
+  });
+</script>
+

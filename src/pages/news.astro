@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const newsItems = await getCollection('news');
+
+// Helper to extract year from date string like "Oct 2024"
+function getYearFromDate(date: string): string {
+  const match = date.match(/\b(20\d{2})\b/);
+  return match ? match[1] : 'Other';
+}
+
+// Group news by year
+const groupedByYear: Record<string, typeof newsItems> = {};
+newsItems.forEach(item => {
+  const year = getYearFromDate(item.data.date);
+  if (!groupedByYear[year]) groupedByYear[year] = [];
+  groupedByYear[year].push(item);
+});
+
+// Sort years (latest first)
+const sortedYears = Object.keys(groupedByYear)
+  .filter(y => y !== 'Other')
+  .sort((a, b) => Number(b) - Number(a));
+
+if (groupedByYear['Other']) sortedYears.push('Other');
+
+// Default open year (latest)
+const defaultOpenYear = sortedYears[0] || '';
+---
+
+<BaseLayout title="News" includeFooter={false}>
+  <main class="news-page" id="news">
+    <div class="news-page__header">
+      <h2 class="news-page__title">Our Lab in News</h2>
+      <p class="news-page__subtitle">Latest updates, media coverage, and announcements</p>
+    </div>
+
+    <div class="news-page__timeline">
+      <div class="news-page__timeline-spine"></div>
+      
+      {sortedYears.map((year, yearIndex) => (
+        <div class="news-page__year-block" data-year={year}>
+          <button class="news-page__year-marker" data-toggle-year={year}>
+            <span class="news-page__year-badge">{year}</span>
+            <span class="news-page__arrow">{year === defaultOpenYear ? '▾' : '▸'}</span>
+          </button>
+
+          <div class={`news-page__cards ${year === defaultOpenYear ? 'open' : ''}`} data-year-grid={year}>
+            {groupedByYear[year].map((item, index) => (
+              <div class="news-card" style={`--card-index: ${index}`}>
+                <div class="news-card__connector"></div>
+                <div class="news-card__content">
+                  <div class="news-card__meta">
+                    <span class="news-card__date">{item.data.date}</span>
+                    {item.data.source && (
+                      <span class="news-card__source">{item.data.source}</span>
+                    )}
+                  </div>
+
+                  <h3 class="news-card__headline">
+                    {item.data.link ? (
+                      <a href={item.data.link} target="_blank">
+                        {item.data.title}
+                        <span class="news-card__link-icon">→</span>
+                      </a>
+                    ) : (
+                      item.data.title
+                    )}
+                  </h3>
+
+                  {item.body && (
+                    <p class="news-card__summary">{item.body}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  const yearButtons = document.querySelectorAll('[data-toggle-year]');
+  
+  yearButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const year = btn.getAttribute('data-toggle-year');
+      const cards = document.querySelector(`[data-year-grid="${year}"]`);
+      const arrow = btn.querySelector('.news-page__arrow');
+      const marker = btn.closest('.news-page__year-block');
+      
+      if (cards?.classList.contains('open')) {
+        cards.classList.remove('open');
+        marker?.classList.remove('active');
+        if (arrow) arrow.textContent = '▸';
+      } else {
+        // Close all other sections
+        document.querySelectorAll('.news-page__cards').forEach(c => c.classList.remove('open'));
+        document.querySelectorAll('.news-page__year-block').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.news-page__arrow').forEach(a => a.textContent = '▸');
+        
+        // Open this one
+        cards?.classList.add('open');
+        marker?.classList.add('active');
+        if (arrow) arrow.textContent = '▾';
+      }
+    });
+  });
+
+  // Set initial active state for default open year
+  const defaultOpenSection = document.querySelector('.news-page__cards.open');
+  if (defaultOpenSection) {
+    defaultOpenSection.closest('.news-page__year-block')?.classList.add('active');
+  }
+</script>
+

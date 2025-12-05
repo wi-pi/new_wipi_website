@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+
+// People data - inline to avoid file system issues at build time
+// Replace placeholder images with actual photos in public/images/people/
+const peopleData = {
+  students: [
+    { name: 'Jack West', type: 'PhD Student', link: 'https://cecchetti.sites.cs.wisc.edu/', img: `${base}images/person-placeholder.svg` },
+    { name: 'Asmit Nayak', type: 'PhD Student', link: 'https://pages.cs.wisc.edu/~chatterjee/', img: `${base}images/person-placeholder.svg` },
+    { name: 'Leo Cao', type: 'PhD Student', link: 'https://kassemfawaz.com/', img: `${base}images/person-placeholder.svg` },
+    { name: 'Shirley Zhang', type: 'PhD Student', link: 'https://pages.cs.wisc.edu/~rishab/', img: `${base}images/person-placeholder.svg` },
+    { name: 'Salem', type: 'PhD Student', link: 'https://patrickmcdaniel.org/', img: `${base}images/person-placeholder.svg` },
+    { name: 'Guruprasad Viswanathan', type: 'PhD Student', link: 'http://pages.cs.wisc.edu/~jha/', img: `${base}images/person-placeholder.svg` },
+    { name: 'Ben Jacobson', type: 'PhD Student', link: 'https://patrickmcdaniel.org/', img: `${base}images/person-placeholder.svg` },
+    { name: 'Yash Wani', type: 'PhD Student', link: 'https://patrickmcdaniel.org/', img: `${base}images/person-placeholder.svg` },
+  ],
+  undergraduates: [
+    { name: 'Baseeim Siddique', type: 'Research Assistant', link: '#', img: `${base}images/person-placeholder.svg` },
+  ],
+  alumni: [
+    { name: 'Alumni 1', type: 'Google', link: '#', img: `${base}images/person-placeholder.svg` },
+    { name: 'Alumni 2', type: 'Microsoft', link: '#', img: `${base}images/person-placeholder.svg` },
+    { name: 'Alumni 3', type: 'Meta', link: '#', img: `${base}images/person-placeholder.svg` },
+    { name: 'Alumni 4', type: 'Amazon', link: '#', img: `${base}images/person-placeholder.svg` },
+    { name: 'Alumni 5', type: 'Apple', link: '#', img: `${base}images/person-placeholder.svg` },
+    { name: 'Alumni 6', type: 'OpenAI', link: '#', img: `${base}images/person-placeholder.svg` }
+  ]
+};
+
+const { students, undergraduates, alumni } = peopleData;
+
+interface Person {
+  name: string;
+  type: string;
+  link: string;
+  img: string;
+}
+---
+
+<BaseLayout title="Students">
+  <main class="students-page">
+    <div class="students-page__header">
+      <h1 class="students-page__main-title">Our Team</h1>
+      <p class="students-page__subtitle">Meet the researchers driving innovation in privacy and security</p>
+    </div>
+
+    <div class="students-page__content">
+      <section class="students-page__section">
+        <div class="students-page__section-header">
+          <h2 class="students-page__section-title">Graduate Students</h2>
+          <div class="students-page__section-line"></div>
+        </div>
+        <div class="students-page__grid">
+          {students.map((person: Person, index: number) => (
+            <div class="person" style={`--person-index: ${index}`}>
+              <a href={person.link} target="_blank" rel="noreferrer" class="person__link">
+                <img src={person.img} alt={person.name} class="person__thumbnail" />
+              </a>
+              <p class="person__name">
+                <a href={person.link} target="_blank" rel="noreferrer">
+                  {person.name}
+                </a>
+              </p>
+              <p class="person__type">{person.type}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="students-page__section">
+        <div class="students-page__section-header">
+          <h2 class="students-page__section-title">Undergraduates</h2>
+          <div class="students-page__section-line"></div>
+        </div>
+        <div class="students-page__grid">
+          {undergraduates.map((person: Person, index: number) => (
+            <div class="person" style={`--person-index: ${index}`}>
+              <a href={person.link} target="_blank" rel="noreferrer" class="person__link">
+                <img src={person.img} alt={person.name} class="person__thumbnail" />
+              </a>
+              <p class="person__name">
+                <a href={person.link} target="_blank" rel="noreferrer">
+                  {person.name}
+                </a>
+              </p>
+              <p class="person__type">{person.type}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="students-page__section">
+        <div class="students-page__section-header">
+          <h2 class="students-page__section-title">Alumni</h2>
+          <div class="students-page__section-line"></div>
+        </div>
+        <div class="students-page__grid">
+          {alumni.map((person: Person, index: number) => (
+            <div class="person" style={`--person-index: ${index}`}>
+              <a href={person.link} target="_blank" rel="noreferrer" class="person__link">
+                <img src={person.img} alt={person.name} class="person__thumbnail" />
+              </a>
+              <p class="person__name">
+                <a href={person.link} target="_blank" rel="noreferrer">
+                  {person.name}
+                </a>
+              </p>
+              <p class="person__type">{person.type}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </main>
+</BaseLayout>

@@ -1,0 +1,139 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+
+// Home data - inline to avoid file system issues at build time
+const homeData = {
+  heroTitle: "WI-PI : Wisconsin Privacy and Security Group",
+  heroSubtitle: `Making the users of online systems "privacy-aware" is a long-standing challenge. In our group, we address this challenge by investigating two central research questions: How can we design more intuitive interfaces that automatically present privacy notices and control to the users? Moreover, how to develop privacy controls that satisfy theoretical privacy guarantees for the release of users' data?`,
+  heroImages: [
+    `${base}images/hero-1.svg`,
+    `${base}images/hero-2.svg`
+  ],
+  researchItems: [
+    {
+      img: `${base}images/research-systems.svg`,
+      title: 'In Systems',
+      text: 'We study how privacy and security concerns arise in real-world systems, including operating systems, mobile platforms, and large-scale services.'
+    },
+    {
+      img: `${base}images/research-people.svg`,
+      title: 'For People',
+      text: 'We focus on human-centered security and privacy, understanding how users perceive risks and how to design usable protections.'
+    },
+    {
+      img: `${base}images/research-math.svg`,
+      title: 'Using Math',
+      text: 'We use formal methods, cryptography, and statistical techniques to design rigorous guarantees for data protection and privacy.'
+    },
+    {
+      img: `${base}images/research-ai.svg`,
+      title: 'For/Using AI',
+      text: 'We investigate both the privacy implications of AI systems and how AI can be used to improve security and privacy tooling.'
+    }
+  ]
+};
+
+const { heroTitle, heroSubtitle, heroImages, researchItems } = homeData;
+---
+
+<BaseLayout title="Home">
+  <!-- Hero Section -->
+  <section class="hero">
+    {heroImages.map((src: string, i: number) => (
+      <img 
+        src={src} 
+        alt="" 
+        class={`hero__bg-image ${i === 0 ? 'active' : ''}`}
+        data-index={i}
+      />
+    ))}
+    
+    <div class="hero__content">
+      <div class="hero__text-card">
+        <h1 class="hero__title"><span class="hero__title-accent">WI-PI</span> : Wisconsin Privacy and Security Group</h1>
+        <p class="hero__subtitle">{heroSubtitle}</p>
+      </div>
+      
+      <div class="hero__image-card">
+        {heroImages.map((src: string, i: number) => (
+          <img 
+            src={src} 
+            alt="Hero image" 
+            class={`hero__image ${i === 0 ? 'active' : ''}`}
+            data-index={i}
+          />
+        ))}
+        
+        <div class="hero__dots">
+          {heroImages.map((_: string, i: number) => (
+            <button 
+              class={`hero__dot ${i === 0 ? 'active' : ''}`}
+              data-index={i}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Research Section -->
+  <section class="research">
+    <div class="research__container">
+      <h2 class="research__title">Our research focuses on <span class="research__title-accent">Privacy & Security</span></h2>
+      <div class="research__grid">
+        {researchItems.map((item, index) => (
+          <div class="research__card" style={`--card-index: ${index}`}>
+            <img src={item.img} alt={item.title} class="research__card-img" />
+            <div class="research__card-content">
+              <h3 class="research__card-title">{item.title}</h3>
+              <p class="research__card-text">{item.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Hero slideshow functionality
+  let currentIndex = 0;
+  const bgImages = document.querySelectorAll('.hero__bg-image');
+  const heroImages = document.querySelectorAll('.hero__image');
+  const dots = document.querySelectorAll('.hero__dot');
+  const totalSlides = bgImages.length;
+
+  function goToSlide(index: number) {
+    // Remove active from all
+    bgImages.forEach(img => img.classList.remove('active'));
+    heroImages.forEach(img => img.classList.remove('active'));
+    dots.forEach(dot => dot.classList.remove('active'));
+
+    // Add active to current
+    bgImages[index]?.classList.add('active');
+    heroImages[index]?.classList.add('active');
+    dots[index]?.classList.add('active');
+
+    currentIndex = index;
+  }
+
+  // Auto-advance slideshow
+  let interval = setInterval(() => {
+    goToSlide((currentIndex + 1) % totalSlides);
+  }, 5000);
+
+  // Dot click handlers
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => {
+      goToSlide(i);
+      // Reset timer on manual navigation
+      clearInterval(interval);
+      interval = setInterval(() => {
+        goToSlide((currentIndex + 1) % totalSlides);
+      }, 5000);
+    });
+  });
+</script>

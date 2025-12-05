@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <rect width="400" height="300" fill="#234e52"/>
+  <!-- Math symbols and formulas -->
+  <text x="80" y="80" font-family="serif" font-size="48" fill="#81e6d9" font-style="italic">∑</text>
+  <text x="130" y="70" font-family="serif" font-size="24" fill="#4fd1c5">n</text>
+  <text x="130" y="95" font-family="serif" font-size="24" fill="#4fd1c5">i=1</text>
+  
+  <text x="200" y="120" font-family="serif" font-size="36" fill="#81e6d9">ε-DP</text>
+  
+  <!-- Integral symbol -->
+  <text x="280" y="100" font-family="serif" font-size="64" fill="#4fd1c5" font-style="italic">∫</text>
+  
+  <!-- Matrix brackets -->
+  <text x="60" y="200" font-family="monospace" font-size="80" fill="#81e6d9">[</text>
+  <text x="85" y="170" font-family="serif" font-size="24" fill="#4fd1c5">a b</text>
+  <text x="85" y="200" font-family="serif" font-size="24" fill="#4fd1c5">c d</text>
+  <text x="130" y="200" font-family="monospace" font-size="80" fill="#81e6d9">]</text>
+  
+  <!-- Pi and encryption -->
+  <text x="200" y="220" font-family="serif" font-size="48" fill="#81e6d9">π</text>
+  <text x="270" y="200" font-family="serif" font-size="32" fill="#4fd1c5">E(m)</text>
+  <text x="270" y="240" font-family="serif" font-size="24" fill="#81e6d9">= c</text>
+  
+  <!-- Key icon -->
+  <ellipse cx="340" cy="260" rx="15" ry="12" fill="none" stroke="#81e6d9" stroke-width="3"/>
+  <line x1="355" y1="260" x2="380" y2="260" stroke="#81e6d9" stroke-width="3"/>
+  <line x1="370" y1="260" x2="370" y2="270" stroke="#81e6d9" stroke-width="3"/>
+  <line x1="380" y1="260" x2="380" y2="270" stroke="#81e6d9" stroke-width="3"/>
+</svg>
+

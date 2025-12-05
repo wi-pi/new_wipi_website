@@ -1,0 +1,334 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const publications = await getCollection('publications');
+
+const types = ['All', 'Conference', 'Journal', 'Dissertation', 'Patent', 'arXiv'];
+const focusOptions = [
+  { key: 'all', label: 'All' },
+  { key: 'systems', label: 'In Systems' },
+  { key: 'people', label: 'For People' },
+  { key: 'math', label: 'Using Math' },
+  { key: 'ai', label: 'For/Using AI' },
+];
+
+const focusLabelMap: Record<string, string> = {
+  systems: 'In Systems',
+  people: 'For People',
+  math: 'Using Math',
+  ai: 'For/Using AI',
+};
+---
+
+<BaseLayout title="Publications" includeFooter={false}>
+  <main class="publications-page">
+    <div class="publications-page__header">
+      <h1 class="publications-page__heading">Publications</h1>
+      <p class="publications-page__subtitle">Research papers, dissertations, and patents from our lab</p>
+    </div>
+    
+    <div class="publications-page__container">
+      <!-- Type Filter -->
+      <div class="filter-section">
+        <div class="filter-container" id="type-filter">
+          {types.map((type) => (
+            <button 
+              class={`filter-btn ${type === 'All' ? 'active' : ''}`}
+              data-type={type}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <!-- Focus Filter -->
+      <div class="filter-section">
+        <div class="filter-label">Filter by research focus</div>
+        <div class="filter-container" id="focus-filter">
+          {focusOptions.map((opt) => (
+            <button 
+              class={`filter-btn ${opt.key === 'all' ? 'active' : ''}`}
+              data-focus={opt.key}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <!-- Publications Grid -->
+      <div class="publications-grid" id="publications-grid">
+        {publications.map((pub, index) => (
+          <div 
+            class="pub-card"
+            data-type={pub.data.type}
+            data-focus={JSON.stringify(pub.data.focus)}
+            data-index={index}
+            style={`--pub-index: ${index}`}
+          >
+            <div class="pub-card__title-row">
+              <h3 class="pub-card__title">{pub.data.title}</h3>
+              <span class="pub-card__badge">{pub.data.type}</span>
+            </div>
+
+            <div class="pub-card__meta-row">
+              <div class="pub-card__authors">{pub.data.authors}</div>
+              {(pub.data.year || pub.data.venue) && (
+                <span class="pub-card__venue">
+                  {[pub.data.venue, pub.data.year].filter(Boolean).join(', ')}
+                </span>
+              )}
+            </div>
+
+            <div class="pub-card__focus-row">
+              {pub.data.focus.map((f: string) => (
+                <span class="pub-card__focus-badge">{focusLabelMap[f]}</span>
+              ))}
+            </div>
+
+            <p class="pub-card__abstract" data-abstract={index}>
+              {pub.body}
+            </p>
+
+            <div class="pub-card__btn-row">
+              {pub.data.pdfUrl && (
+                <button 
+                  class="btn-primary" 
+                  data-pdf={pub.data.pdfUrl}
+                  data-title={pub.data.title}
+                  title="Open PDF"
+                >
+                  PDF
+                </button>
+              )}
+              <button 
+                class="btn-ghost"
+                data-cite
+                data-cite-authors={pub.data.authors}
+                data-cite-year={pub.data.year || ''}
+                data-cite-title={pub.data.title}
+                data-cite-venue={pub.data.venue || ''}
+                data-cite-type={pub.data.type}
+              >
+                Cite
+              </button>
+              <button class="btn-abstract-toggle" data-toggle-abstract={index}>
+                Show Abstract ▼
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </main>
+
+  <!-- PDF Modal -->
+  <div class="modal-backdrop" id="pdf-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h4 class="modal-title">PDF</h4>
+        <button class="modal-close" data-close-modal>×</button>
+      </div>
+      <div class="modal-body">
+        <iframe class="modal-pdf-frame" id="pdf-frame" src="" title="PDF Viewer"></iframe>
+        <a class="modal-pdf-link" id="pdf-link" href="" target="_blank" rel="noopener noreferrer">
+          Open PDF in new tab
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cite Modal -->
+  <div class="modal-backdrop" id="cite-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h4 class="modal-title">Citation</h4>
+        <button class="modal-close" data-close-modal>×</button>
+      </div>
+      <div class="modal-body">
+        <pre class="cite-block" id="cite-text"></pre>
+        <div class="cite-actions">
+          <button class="btn-primary" id="copy-cite-btn">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Filter functionality
+  const typeButtons = document.querySelectorAll('#type-filter .filter-btn');
+  const focusButtons = document.querySelectorAll('#focus-filter .filter-btn');
+  const pubCards = document.querySelectorAll('.pub-card');
+
+  let activeType = 'All';
+  let activeFocus = 'all';
+
+  function updateURLParams() {
+    const params = new URLSearchParams();
+    if (activeType !== 'All') params.set('type', activeType);
+    if (activeFocus !== 'all') params.set('focus', activeFocus);
+    const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+  }
+
+  function filterCards() {
+    pubCards.forEach(card => {
+      const cardType = card.getAttribute('data-type');
+      const cardFocus = JSON.parse(card.getAttribute('data-focus') || '[]');
+      
+      const typeMatch = activeType === 'All' || cardType === activeType;
+      const focusMatch = activeFocus === 'all' || cardFocus.includes(activeFocus);
+
+      (card as HTMLElement).style.display = typeMatch && focusMatch ? 'flex' : 'none';
+    });
+  }
+
+  // Initialize from URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const typeParam = urlParams.get('type');
+  const focusParam = urlParams.get('focus');
+
+  if (typeParam) {
+    activeType = typeParam;
+    typeButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-type') === typeParam);
+    });
+  }
+
+  if (focusParam) {
+    activeFocus = focusParam;
+    focusButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-focus') === focusParam);
+    });
+  }
+
+  filterCards();
+
+  typeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      typeButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeType = btn.getAttribute('data-type') || 'All';
+      updateURLParams();
+      filterCards();
+    });
+  });
+
+  focusButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      focusButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFocus = btn.getAttribute('data-focus') || 'all';
+      updateURLParams();
+      filterCards();
+    });
+  });
+
+  // Abstract toggle
+  const abstractToggles = document.querySelectorAll('[data-toggle-abstract]');
+  abstractToggles.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const index = btn.getAttribute('data-toggle-abstract');
+      const abstract = document.querySelector(`[data-abstract="${index}"]`);
+      
+      if (abstract?.classList.contains('expanded')) {
+        abstract.classList.remove('expanded');
+        btn.textContent = 'Show Abstract ▼';
+      } else {
+        abstract?.classList.add('expanded');
+        btn.textContent = 'Hide Abstract ▲';
+      }
+    });
+  });
+
+  // PDF Modal
+  const pdfModal = document.getElementById('pdf-modal');
+  const pdfFrame = document.getElementById('pdf-frame') as HTMLIFrameElement;
+  const pdfLink = document.getElementById('pdf-link') as HTMLAnchorElement;
+
+  document.querySelectorAll('[data-pdf]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pdfUrl = btn.getAttribute('data-pdf');
+      if (pdfUrl && pdfModal && pdfFrame && pdfLink) {
+        pdfFrame.src = pdfUrl;
+        pdfLink.href = pdfUrl;
+        pdfModal.classList.add('open');
+      }
+    });
+  });
+
+  // Cite Modal
+  const citeModal = document.getElementById('cite-modal');
+  const citeText = document.getElementById('cite-text');
+  const copyCiteBtn = document.getElementById('copy-cite-btn');
+
+  function formatCitationAPA(authors: string, year: string, title: string, venue: string, type: string): string {
+    const authorList = authors.split(/[,;]\s*/g).map(s => s.trim()).filter(Boolean).join(', ');
+    const yearStr = year ? `(${year}).` : '(n.d.).';
+    const venueStr = venue ? ` ${venue}.` : '';
+    const typeSuffix = type === 'arXiv' ? ' arXiv.' : type === 'Dissertation' ? ' [Doctoral dissertation].' : '';
+    return `${authorList} ${yearStr} ${title}.${venueStr}${typeSuffix}`;
+  }
+
+  document.querySelectorAll('[data-cite]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const authors = btn.getAttribute('data-cite-authors') || '';
+      const year = btn.getAttribute('data-cite-year') || '';
+      const title = btn.getAttribute('data-cite-title') || '';
+      const venue = btn.getAttribute('data-cite-venue') || '';
+      const type = btn.getAttribute('data-cite-type') || '';
+      
+      const citation = formatCitationAPA(authors, year, title, venue, type);
+      
+      if (citeText && citeModal) {
+        citeText.textContent = citation;
+        citeModal.classList.add('open');
+      }
+    });
+  });
+
+  copyCiteBtn?.addEventListener('click', async () => {
+    const text = citeText?.textContent || '';
+    try {
+      await navigator.clipboard.writeText(text);
+      if (copyCiteBtn) copyCiteBtn.textContent = 'Copied!';
+      setTimeout(() => {
+        if (copyCiteBtn) copyCiteBtn.textContent = 'Copy';
+      }, 1200);
+    } catch {
+      alert('Copy failed. You can select and copy manually.');
+    }
+  });
+
+  // Close modals
+  document.querySelectorAll('[data-close-modal]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      pdfModal?.classList.remove('open');
+      citeModal?.classList.remove('open');
+      if (pdfFrame) pdfFrame.src = '';
+    });
+  });
+
+  // Close modal on backdrop click
+  [pdfModal, citeModal].forEach(modal => {
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('open');
+        if (pdfFrame) pdfFrame.src = '';
+      }
+    });
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      pdfModal?.classList.remove('open');
+      citeModal?.classList.remove('open');
+      if (pdfFrame) pdfFrame.src = '';
+    }
+  });
+</script>
+

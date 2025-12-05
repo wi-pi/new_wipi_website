@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" fill="none">
+  <rect width="1000" height="600" fill="#742a2a"/>
+  <rect x="100" y="100" width="150" height="150" rx="15" fill="#9b2c2c" opacity="0.5"/>
+  <rect x="750" y="100" width="150" height="150" rx="15" fill="#9b2c2c" opacity="0.5"/>
+  <rect x="100" y="350" width="150" height="150" rx="15" fill="#9b2c2c" opacity="0.5"/>
+  <rect x="750" y="350" width="150" height="150" rx="15" fill="#9b2c2c" opacity="0.5"/>
+  <circle cx="500" cy="300" r="180" fill="#c53030" opacity="0.3"/>
+  <circle cx="500" cy="300" r="120" fill="#e53e3e" opacity="0.3"/>
+  <text x="500" y="290" font-family="system-ui" font-size="42" fill="white" text-anchor="middle" font-weight="600">University of Wisconsin</text>
+  <text x="500" y="340" font-family="system-ui" font-size="28" fill="#feb2b2" text-anchor="middle">Madison</text>
+</svg>
+
